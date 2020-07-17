@@ -5,13 +5,11 @@ import java.net.ServerSocket;
 import java.net.Socket;
 import java.net.URLConnection;
 import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.concurrent.Callable;
-import java.util.concurrent.Executor;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
+import java.util.concurrent.*;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -23,8 +21,13 @@ public class SingleFileHttpServer {
     private final int port;
     private final String encoding;
 
+    ThreadPoolExecutor threadPoolExecutor = new ThreadPoolExecutor(100, 100,
+            0L, TimeUnit.MILLISECONDS,
+            new LinkedBlockingQueue<>());
 
-    public SingleFileHttpServer(String data, String mimeType, int port, String encoding) throws UnsupportedEncodingException {
+
+    public SingleFileHttpServer(String data, String mimeType, int port, String encoding)
+            throws UnsupportedEncodingException {
         this(data.getBytes(encoding), mimeType, port, encoding);
     }
 
@@ -37,11 +40,12 @@ public class SingleFileHttpServer {
                 + "Server: OneFile 2.0\r\n"
                 + "Content-length: " + this.content.length + "\r\n"
                 + "Content-type: " + mimeType + "; charset=" + encoding + "\r\n\r\n";
-        this.header = header.getBytes(Charset.forName("US-ASCII"));
+        this.header = header.getBytes(StandardCharsets.US_ASCII);
     }
 
     public void start() {
-        ExecutorService pool = Executors.newFixedThreadPool(100);
+        ExecutorService pool = threadPoolExecutor;
+
         try (ServerSocket server = new ServerSocket(this.port)) {
             logger.info("Accepting connections on port " + server.getLocalPort());
             logger.info("Data to send:");

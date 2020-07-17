@@ -6,14 +6,21 @@ import java.net.BindException;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.util.Date;
+import java.util.concurrent.Executors;
+import java.util.concurrent.LinkedBlockingQueue;
+import java.util.concurrent.ThreadPoolExecutor;
+import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
 public class Redirector {
-    private Logger logger = Logger.getLogger(getClass().getName());
+    private static final Logger logger = Logger.getLogger(Redirector.class.getName());
 
     private final int port;
     private final String newSite;
+    ThreadPoolExecutor threadPoolExecutor = new ThreadPoolExecutor(10, 10,
+            0L,TimeUnit.MILLISECONDS,
+            new LinkedBlockingQueue<>());
 
     public Redirector(int port, String newSite) {
         this.port = port;
@@ -27,8 +34,7 @@ public class Redirector {
             while (true) {
                 try {
                     Socket s = server.accept();
-                    Thread t = new RedirectThread(s);
-                    t.start();
+                    threadPoolExecutor.execute(new RedirectThread(s));
                 } catch (IOException e) {
                     e.printStackTrace();
                 } catch (RuntimeException ex) {
@@ -42,7 +48,7 @@ public class Redirector {
         }
     }
 
-    private class RedirectThread extends Thread {
+    private class RedirectThread implements Runnable {
         private final Socket connection;
 
         private RedirectThread(Socket connection) {
