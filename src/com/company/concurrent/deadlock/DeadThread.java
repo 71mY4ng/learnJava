@@ -1,4 +1,4 @@
-package com.company.concurrent;
+package com.company.concurrent.deadlock;
 
 public class DeadThread implements Runnable {
 

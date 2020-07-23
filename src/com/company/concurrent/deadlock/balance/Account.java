@@ -1,4 +1,4 @@
-package com.company.concurrent;
+package com.company.concurrent.deadlock.balance;
 
 import javax.naming.InsufficientResourcesException;
 
@@ -20,7 +20,7 @@ class Account {
         this.money += amount;
     }
 
-    public int get() {
+    public int getBalance() {
         return this.money;
     }
 }

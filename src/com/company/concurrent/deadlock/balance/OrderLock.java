@@ -1,8 +1,7 @@
-package com.company.concurrent;
+package com.company.concurrent.deadlock.balance;
 
 import javax.naming.InsufficientResourcesException;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
+import java.util.concurrent.*;
 // 死锁版本
 
 public class OrderLock {
@@ -12,7 +11,7 @@ public class OrderLock {
             throws InsufficientResourcesException {
         class Helper {
             public void transfer() throws InsufficientResourcesException {
-                if (fromAcct.get() < amount)
+                if (fromAcct.getBalance() < amount)
                     throw new InsufficientResourcesException();
                 else {
                     fromAcct.debit(amount);
@@ -53,14 +52,20 @@ public class OrderLock {
     }
 
     public static void main(String[] args) {
+
+        ExecutorService threadPool = new ThreadPoolExecutor(0, Integer.MAX_VALUE,
+                60L, TimeUnit.SECONDS,
+                new SynchronousQueue<>());
+
         Account fromAcct = new Account(100);
         Account toAcct = new Account(230);
         OrderLock orderLock = new OrderLock();
-        ExecutorService threadPool = Executors.newCachedThreadPool();
         for (int i = 0; i < 5; i++) {
-            if ((i & 1) == 0)
+            if ((i & 1) == 0) {
                 threadPool.execute(orderLock.new MyThread(fromAcct, toAcct, 10));
-            else threadPool.execute(orderLock.new MyThread(toAcct, fromAcct, 10));
+            } else {
+                threadPool.execute(orderLock.new MyThread(toAcct, fromAcct, 10));
+            }
         }
     }
 }

@@ -6,6 +6,7 @@ import java.util.*;
  * 动态规划
  *
  * 最少硬币找零问题
+ * @author Tim
  */
 public class DynamicProgrammingDemo {
 

@@ -2,11 +2,11 @@ package com.company.concurrent;
 
 import javax.xml.bind.DatatypeConverter;
 import java.io.FileInputStream;
-import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.security.DigestInputStream;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
+import java.util.concurrent.*;
 
 /**
  * 批量计算文件的sha值
@@ -27,9 +27,11 @@ public class DigestRunnable implements Runnable {
     public void run() {
 
         try {
+
             FileInputStream in = new FileInputStream(filename);
             MessageDigest sha = MessageDigest.getInstance("SHA-256");
             DigestInputStream din = new DigestInputStream(in, sha);
+
             while (din.read() != -1) ;
             din.close();
             byte[] digest = sha.digest();
@@ -39,11 +41,7 @@ public class DigestRunnable implements Runnable {
             result.append(DatatypeConverter.printHexBinary(digest));
 
             System.out.println(result);
-        } catch (FileNotFoundException e) {
-            e.printStackTrace();
-        } catch (NoSuchAlgorithmException e) {
-            e.printStackTrace();
-        } catch (IOException e) {
+        } catch (NoSuchAlgorithmException | IOException e) {
             e.printStackTrace();
         }
 
@@ -51,12 +49,12 @@ public class DigestRunnable implements Runnable {
     }
 
     public static void main(String[] args) {
-        for (String filename: args
-             ) {
-            DigestRunnable dr = new DigestRunnable(filename);
-            Thread tr = new Thread(dr);
-            tr.start();
-        }
+        ExecutorService threadPool = new ThreadPoolExecutor(5, 10,
+                0L, TimeUnit.MILLISECONDS,
+                new LinkedBlockingQueue<>());
 
+        for (String filename: args) {
+            threadPool.execute(new DigestRunnable(filename));
+        }
     }
 }

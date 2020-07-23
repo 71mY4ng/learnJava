@@ -14,7 +14,7 @@ public class SourceViewer2 {
             try {
                 URL u = new URL(args[0]);
                 URLConnection conn = u.openConnection();
-                try (InputStream raw = conn.getInputStream()) {     // 自动关闭
+                try (InputStream raw = conn.getInputStream()) {
                     InputStream buffer = new BufferedInputStream(raw);
                     // inputstream 串链到reader
                     Reader reader = new InputStreamReader(buffer);

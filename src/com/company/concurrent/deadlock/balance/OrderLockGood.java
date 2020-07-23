@@ -1,19 +1,22 @@
-package com.company.concurrent;
+package com.company.concurrent.deadlock.balance;
 
 import javax.naming.InsufficientResourcesException;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
+import java.util.concurrent.*;
 
-// 解决死锁版本
-
+/**
+ * 解决死锁版本
+ */
 public class OrderLockGood {
-    private static final Object tieLock = new Object();
+
+    private static final Object TIE_LOCK = new Object();
 
     public void transferMoney(final Account fromAcct, final Account toAcct, final int amount)
             throws InsufficientResourcesException {
+
         class Helper {
             public void transfer() throws InsufficientResourcesException {
-                if (fromAcct.get() < amount)
+
+                if (fromAcct.getBalance() < amount)
                     throw new InsufficientResourcesException();
                 else {
                     fromAcct.debit(amount);
@@ -39,7 +42,7 @@ public class OrderLockGood {
                 }
             }
         } else {
-            synchronized (tieLock) {
+            synchronized (TIE_LOCK) {
                 synchronized (fromAcct) {
                     synchronized (toAcct) {
                         new Helper().transfer();
@@ -49,12 +52,12 @@ public class OrderLockGood {
         }
     }
 
-    class MyThread implements Runnable {
+    class AccountTransferTask implements Runnable {
         private Account fromAcct;
         private Account toAcct;
         private int amount;
 
-        public MyThread(Account fromAcct, Account toAcct, int amount) {
+        public AccountTransferTask(Account fromAcct, Account toAcct, int amount) {
             this.fromAcct = fromAcct;
             this.toAcct = toAcct;
             this.amount = amount;
@@ -73,16 +76,22 @@ public class OrderLockGood {
     }
 
     public static void main(String[] args) {
+        ExecutorService threadPool = new ThreadPoolExecutor(0, Integer.MAX_VALUE,
+                60L, TimeUnit.SECONDS,
+                new SynchronousQueue<>());
+
         // 转账双方共用这两个账户对象
         Account fromAcct = new Account(100);
         Account toAcct = new Account(230);
         OrderLockGood orderLock = new OrderLockGood();
-        ExecutorService threadPool = Executors.newCachedThreadPool();
         for (int i = 0; i < 5; i++) {
-            if ((i & 1) == 0)
-                threadPool.execute(orderLock.new MyThread(fromAcct, toAcct, 10));
+            if ((i & 1) == 0) {
+                threadPool.execute(orderLock.new AccountTransferTask(fromAcct, toAcct, 10));
+            }
+            else {
                 // 注：转账的账户变成了toAcct，被转账的账户变成了fromAcct
-            else threadPool.execute(orderLock.new MyThread(toAcct, fromAcct, 10));
+                threadPool.execute(orderLock.new AccountTransferTask(toAcct, fromAcct, 10));
+            }
         }
     }
 }
