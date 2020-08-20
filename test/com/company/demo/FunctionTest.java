@@ -20,8 +20,4 @@ public class FunctionTest {
         y = temp;
     }
 
-    @Test
-    public void statusTest() {
-
-    }
 }
