@@ -23,19 +23,25 @@ public class MobilePhonePanel17Solution {
     }
 
     public List<String> letterCombinations(String digits) {
-        List<String> result = new ArrayList<>();
+        if (digits == null || (digits = digits.trim()).length() == 0)
+            return Collections.emptyList();
+
+        List<String> result = null;
 
         for (char c : digits.toCharArray()) {
-            if (result.isEmpty()) {
-                result = Arrays.asList(panelMap.get(c));
+            final String[] ck = panelMap.get(c);
+
+            if (result == null) {
+                result = Arrays.asList(ck);
             } else {
-                List<String> cached = new ArrayList<>();
+                List<String> tmp = new ArrayList<>(result.size() * ck.length);
+
                 for (String s : panelMap.get(c)) {
                     for (String item : result) {
-                        cached.add(item + s);
+                        tmp.add(item + s);
                     }
                 }
-                result = new ArrayList<>(cached);
+                result = new ArrayList<>(tmp);
             }
         }
 
