@@ -4,7 +4,6 @@ import java.io.*;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.net.URLConnection;
-import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -21,7 +20,7 @@ public class SingleFileHttpServer {
     private final int port;
     private final String encoding;
 
-    ThreadPoolExecutor threadPoolExecutor = new ThreadPoolExecutor(100, 100,
+    private static ThreadPoolExecutor threadPoolExecutor = new ThreadPoolExecutor(100, 100,
             0L, TimeUnit.MILLISECONDS,
             new LinkedBlockingQueue<>());
 
@@ -30,7 +29,6 @@ public class SingleFileHttpServer {
             throws UnsupportedEncodingException {
         this(data.getBytes(encoding), mimeType, port, encoding);
     }
-
 
     public SingleFileHttpServer(byte[] data, String mimeType, int port, String encoding) {
         this.encoding = encoding;
@@ -51,7 +49,7 @@ public class SingleFileHttpServer {
             logger.info("Data to send:");
             logger.info(new String(this.content, encoding));
 
-            while (true) {
+            while (!Thread.currentThread().isInterrupted()) {
                 try {
                     Socket connection = server.accept();
                     pool.submit(new HTTPHandler(connection));
@@ -77,14 +75,19 @@ public class SingleFileHttpServer {
         @Override
         public Void call() throws Exception {
             try {
+
                 OutputStream out = new BufferedOutputStream(connection.getOutputStream());
                 InputStream in = new BufferedInputStream(connection.getInputStream());
 
                 StringBuilder request = new StringBuilder(80);
-                while (true) {
+                while (!Thread.currentThread().isInterrupted() && !connection.isClosed()) {
+
                     int c = in.read();
-                    if (c == '\r' || c == '\n' || c == -1) break;
+                    if (c == '\r' || c == '\n' || c == -1) {
+                        break;
+                    }
                     request.append((char) c);
+
                 }
 
                 // if HTTP/1.0 or later, send MIME header again
