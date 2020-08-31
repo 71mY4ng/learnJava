@@ -2,9 +2,11 @@ package com.company.leetcode;
 
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.List;
 
+/**
+ * https://leetcode-cn.com/problems/keys-and-rooms/comments/
+ */
 public class KeysAndRooms {
 
     public boolean canVisitAllRooms(List<List<Integer>> rooms) {
@@ -20,7 +22,7 @@ public class KeysAndRooms {
         // current room entered
         if (visited[roomIndex]) {
 
-            return allMatch(visited, true);
+            return false;
         } else {
 
             visited[roomIndex] = true;
@@ -33,7 +35,7 @@ public class KeysAndRooms {
         }
 
         for (int key : keys) {
-            if (traversal(rooms, key, visited)) break;
+            if (!visited[key] && traversal(rooms, key, visited)) break;
         }
 
         return allMatch(visited, true);
