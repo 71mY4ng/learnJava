@@ -19,8 +19,7 @@ public class TopKFrequentElements {
             );
 
             for (int num : nums) {
-                map.putIfAbsent(num, 0);
-                map.computeIfPresent(num, (key, ov) -> ov + 1);
+                map.put(num, map.getOrDefault(num, 0) + 1);
             }
 
             for (Map.Entry<Integer, Integer> entry : map.entrySet()) {
