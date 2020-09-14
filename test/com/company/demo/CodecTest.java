@@ -45,9 +45,6 @@ public class CodecTest {
              (byte) 0x20, (byte) 0x51
      };
 
-//     String s = "010201006200180056d6220110006400a6ffffff012adc0051a2c0071b00ffff2051";
-//     byte[] data2 = Hex.decodeHex(s.toCharArray());
-
      @Test
      public void testCrc16() {
 //          data2 = data3;
@@ -76,21 +73,21 @@ public class CodecTest {
           final int length = data.length;
 
           System.out.println("data length: " + length);
-          System.out.println("协议版本：" + Arrays.toString(readBytes(data, offset, 1)));
-          System.out.println("功能码: " + Arrays.toString(readBytes(data, offset += 1, 1)));
-          System.out.println("终端ID: " + Arrays.toString(readBytes(data, offset += 1, 2)));
-          System.out.println("消息序号: " + Arrays.toString(readBytes(data, offset += 2, 2)));
-          System.out.println("消息长度: " + Arrays.toString(readBytes(data, offset += 2, 2)));
+          System.out.println("ver：" + Arrays.toString(readBytes(data, offset, 1)));
+          System.out.println("fnCode: " + Arrays.toString(readBytes(data, offset += 1, 1)));
+          System.out.println("dev: " + Arrays.toString(readBytes(data, offset += 1, 2)));
+          System.out.println("seq: " + Arrays.toString(readBytes(data, offset += 2, 2)));
+          System.out.println("len: " + Arrays.toString(readBytes(data, offset += 2, 2)));
           final byte[] productSn = readBytes(data, offset += 2, 4);
-          System.out.println("产品SN: " + Arrays.toString(productSn));
+          System.out.println("sn: " + Arrays.toString(productSn));
 
-          System.out.println("终端状态: " + Arrays.toString(readBytes(data, offset += 4, 2)));
-          System.out.println("电池剩余容量: " + Arrays.toString(readBytes(data, offset += 2, 1)));
-          System.out.println("保留字节: " + Arrays.toString(readBytes(data, offset += 1, 1)));
-          System.out.println("强度信号: " + Arrays.toString(readBytes(data, offset += 1, 4)));
-          System.out.println("信号覆盖等级: "+  Arrays.toString(readBytes(data, offset += 4, 1)));
-          System.out.println("信噪比: "+        Arrays.toString(readBytes(data, offset += 1, 1)));
-          System.out.println("小区PCI: "+       Arrays.toString(readBytes(data, offset += 1, 2)));
+          System.out.println("devStt: " + Arrays.toString(readBytes(data, offset += 4, 2)));
+          System.out.println("battery: " + Arrays.toString(readBytes(data, offset += 2, 1)));
+          System.out.println("reserved: " + Arrays.toString(readBytes(data, offset += 1, 1)));
+          System.out.println("signal: " + Arrays.toString(readBytes(data, offset += 1, 4)));
+          System.out.println("level: "+  Arrays.toString(readBytes(data, offset += 4, 1)));
+          System.out.println("ratio: "+        Arrays.toString(readBytes(data, offset += 1, 1)));
+          System.out.println("zonePCI: "+       Arrays.toString(readBytes(data, offset += 1, 2)));
           System.out.println("CellID: "+        Arrays.toString(readBytes(data, offset += 2, 4)));
           System.out.println("binADepth: "+     Arrays.toString(readBytes(data, offset += 4, 2)));
           System.out.println("binBDepth: "+     Arrays.toString(readBytes(data, offset += 2, 2)));
