@@ -4,6 +4,9 @@ import java.util.*;
 
 import static java.lang.System.out;
 
+/**
+ * not pass
+ */
 public class ByteDanceMain2019SpringA {
 
     static class SolverA {
@@ -12,6 +15,24 @@ public class ByteDanceMain2019SpringA {
 
             int wordLen = s.length();
             char[] chars = s.toCharArray();
+
+            LinkedList<Character> cList = new LinkedList<>();
+            for (char c: chars) {
+                cList.add(c);
+            }
+            Stack<Character> stack = new Stack<>();
+
+
+            Iterator<Character> iter = cList.iterator();
+            while (iter.hasNext()) {
+                char cur = iter.next();
+                char curNext = iter.next();
+
+                if (cur == curNext) {
+                    stack.push(cur);
+                    stack.push(curNext);
+                }
+            }
 
             for (int j = 0; j < wordLen; j++) {
 
