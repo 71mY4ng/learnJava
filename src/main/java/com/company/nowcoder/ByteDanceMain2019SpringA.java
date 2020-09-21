@@ -11,53 +11,46 @@ public class ByteDanceMain2019SpringA {
 
     static class SolverA {
 
+        public void solveRegex(String s) {
+
+        }
+
+        public void solveSM(String s) {
+
+        }
+
         public void solve(String s) {
 
-            int wordLen = s.length();
             char[] chars = s.toCharArray();
 
-            LinkedList<Character> cList = new LinkedList<>();
-            for (char c: chars) {
-                cList.add(c);
-            }
-            Stack<Character> stack = new Stack<>();
+            LinkedList<Character> q = new LinkedList<>();
 
-
-            Iterator<Character> iter = cList.iterator();
-            while (iter.hasNext()) {
-                char cur = iter.next();
-                char curNext = iter.next();
-
-                if (cur == curNext) {
-                    stack.push(cur);
-                    stack.push(curNext);
-                }
-            }
-
-            for (int j = 0; j < wordLen; j++) {
-
-                if (j + 1 < wordLen && chars[j] == chars[j + 1]) {
-
-                    // AAA -> _↓AA
-                    if (j + 2 < wordLen && chars[j] == chars[j + 2]) {
-                        chars[j] = ' ';
-                        continue;
-                    }
-
-                    // AABB -> AAB_↓
-                    if (j + 3 < wordLen && chars[j + 2] == chars[j + 3]) {
-                        chars[j + 2] = ' ';
-                        j += 3;
-                    }
-                }
-            }
             StringBuilder sb = new StringBuilder();
             for (char c : chars) {
-                if (c != ' ')
-                    sb.append(c);
+                q.offer(c);
+
+                if (q.size() == 4) {
+                    if (q.get(0).equals(q.get(1)) && q.get(0).equals(q.get(2))) {
+                        // AAA -> AA
+                        q.remove(2);
+                    } else if (q.get(1).equals(q.get(2)) && q.get(2).equals(q.get(3))) {
+                        // AAA -> AA
+                        q.removeLast();
+                    } else if (q.get(0).equals(q.get(1)) && q.get(2).equals(q.get(3))) {
+                        // AABB -> AAB
+                        q.removeLast();
+                    } else {
+                        sb.append(q.poll());
+                    }
+                }
             }
 
-            out.print(sb.toString());
+            for (Character c : q) {
+                sb.append(c);
+            }
+
+            out.println(sb.toString());
+
         }
     }
 
