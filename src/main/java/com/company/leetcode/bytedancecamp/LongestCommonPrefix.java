@@ -7,33 +7,31 @@ public class LongestCommonPrefix {
 
     static class Solution {
         public String longestCommonPrefix(String[] strs) {
-            if (strs == null) return "";
-
-            StringBuilder sb = new StringBuilder();
+            if (strs == null || strs.length == 0) return "";
 
             int i = 0;
+            char cmp;
             while (true) {
-                char cmp = '\000';
+                cmp = '\000';
                 for (String str : strs) {
 
                     if (i > str.length() - 1) {
-                        return sb.toString();
+                        return strs[0].substring(0, i);
                     }
 
                     if (cmp == '\000') {
                         cmp = str.charAt(i);
                     } else if (cmp != str.charAt(i)) {
-                        return sb.toString();
+                        return strs[0].substring(0, i);
                     }
                 }
                 i++;
-                sb.append(cmp);
             }
         }
     }
 
     public static void main(String[] args) {
 
-        System.out.println(new Solution().longestCommonPrefix(new String[]{ "dog","racecar","car" }));
+        System.out.println(new Solution().longestCommonPrefix(new String[]{ }));
     }
 }
