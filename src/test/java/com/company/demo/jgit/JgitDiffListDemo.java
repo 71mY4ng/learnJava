@@ -23,6 +23,11 @@ import java.nio.file.Paths;
 import java.util.Collections;
 import java.util.List;
 
+/**
+ * related links:
+ * - https://gist.github.com/rherrmann/5341e735ce197f306949fc58e9aed141
+ * - https://github.com/centic9/jgit-cookbook
+ */
 public class JgitDiffListDemo {
 
 
