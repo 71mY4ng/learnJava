@@ -11,6 +11,7 @@ import org.eclipse.jgit.revwalk.RevCommit;
 import org.eclipse.jgit.revwalk.RevWalk;
 import org.eclipse.jgit.treewalk.AbstractTreeIterator;
 import org.eclipse.jgit.treewalk.CanonicalTreeParser;
+import org.eclipse.jgit.treewalk.TreeWalk;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -20,6 +21,7 @@ import java.net.*;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
@@ -77,16 +79,45 @@ public class JgitDiffListDemo {
     @Test
     public void testJGitDiffTag() throws GitAPIException, IOException {
 
-        final Ref refA = repository.findRef("art-20201023002");
-        final Ref refB = repository.findRef("art-20201221001");
+        final Ref preTag = repository.findRef("art-20201023002");
+        final Ref afterTag = repository.findRef("art-20201221001");
 
-        final List<DiffEntry> diffs = git.diff().setNewTree(getCanonicalTreeParser(refB.getObjectId()))
-                .setOldTree(getCanonicalTreeParser(refA.getObjectId()))
+        final List<DiffEntry> diffs = git.diff()
+                .setNewTree(getCanonicalTreeParser(afterTag.getObjectId()))
+                .setOldTree(getCanonicalTreeParser(preTag.getObjectId()))
                 .call();
 
         for (DiffEntry diff : diffs) {
             System.out.println("changed: " + diff.getNewPath());
             System.out.println("old: " + diff.getOldPath());
+        }
+
+        getRefFileList(preTag).forEach(System.out::println);
+    }
+
+    /**
+     * get commit ref file list
+     *
+     * @param ref
+     * @return
+     * @throws IOException
+     */
+    private List<String> getRefFileList(Ref ref) throws IOException {
+
+        try (final TreeWalk treeWalk = new TreeWalk(git.getRepository());
+             final RevWalk walk = new RevWalk(repository)
+        ) {
+
+            final RevCommit aCommit = walk.parseCommit(ref.getObjectId());
+            treeWalk.addTree(aCommit.getTree());
+            treeWalk.setRecursive(true);
+
+            List<String> filePaths = new ArrayList<>();
+
+            while (treeWalk.next()) {
+                filePaths.add(treeWalk.getPathString());
+            }
+            return filePaths;
         }
     }
 
