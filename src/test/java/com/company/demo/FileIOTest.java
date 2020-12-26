@@ -1,5 +1,6 @@
 package com.company.demo;
 
+import org.junit.Assert;
 import org.junit.Test;
 
 import java.io.*;
@@ -162,5 +163,30 @@ public class FileIOTest {
         }
     }
 
+    @Test
+    public void testCreateFileWithDir() throws IOException {
+        final Path output = Paths.get("output");
+        final Path path = output.resolve(Paths.get("test/testCreateFileWithDir/test.txt"));
+
+        path.iterator()
+                .forEachRemaining(p -> {
+                    System.out.println("ascending: " + p);
+
+                    if (!p.equals(output)) {
+                        try {
+                            Files.deleteIfExists(p);
+                        } catch (IOException e) {
+                            throw new UncheckedIOException(e);
+                        }
+                    }
+                });
+
+        final Path directories = Files.createDirectories(path.getParent());
+        System.out.println("create: " + directories);
+        final Path file = Files.createFile(path);
+        System.out.println("create: " + file);
+
+        Assert.assertTrue(Files.exists(path));
+    }
 
 }
