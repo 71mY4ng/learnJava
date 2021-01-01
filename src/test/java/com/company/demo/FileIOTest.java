@@ -7,7 +7,10 @@ import java.io.*;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.*;
 import java.nio.file.attribute.BasicFileAttributes;
+import java.nio.file.attribute.PosixFileAttributes;
+import java.nio.file.attribute.PosixFilePermissions;
 import java.util.*;
+import java.util.stream.Collectors;
 
 public class FileIOTest {
     @Test
@@ -106,7 +109,7 @@ public class FileIOTest {
 
     /**
      * @since 1.7
-     *
+     * <p>
      * jdk 1.7 后新增的 nio.Files 帮助用户简化了 File 的操作
      */
     @Test
@@ -164,6 +167,44 @@ public class FileIOTest {
     }
 
     @Test
+    public void testWalkFileTree() throws IOException {
+
+        Path aPath = Paths.get("output/test/testCreateFileWithDir/test.txt");
+        Path bPath = Paths.get("output/test/testCreateFileWithDirB/test.txt");
+        Path cPath = Paths.get("output/test/testCreateFileWithDirC/test.txt");
+        Path dPath = Paths.get("output/test/testCreateFileWithDirD/test.txt");
+
+        final SimpleFileVisitor<Path> sfv = new SimpleFileVisitor<Path>() {
+
+            @Override
+            public FileVisitResult preVisitDirectory(Path dir, BasicFileAttributes attrs)
+                    throws IOException {
+
+                System.out.println("pre visit: " + dir);
+
+                if (Files.notExists(dir)) {
+
+                }
+
+
+                return FileVisitResult.CONTINUE;
+            }
+
+            @Override
+            public FileVisitResult visitFile(Path file, BasicFileAttributes attrs) {
+                Path pathStr = file.toAbsolutePath();
+                if (pathStr.toString().endsWith(".java")) {
+                    System.out.println(pathStr);
+                }
+                return FileVisitResult.CONTINUE;
+            }
+        };
+
+        Files.walkFileTree(Paths.get("output"), sfv);
+    }
+
+
+    @Test
     public void testCreateFileWithDir() throws IOException {
         final Path output = Paths.get("output");
         final Path path = output.resolve(Paths.get("test/testCreateFileWithDir/test.txt"));
@@ -187,6 +228,63 @@ public class FileIOTest {
         System.out.println("create: " + file);
 
         Assert.assertTrue(Files.exists(path));
+    }
+
+    @Test
+    public void lsFolder() throws IOException {
+
+        final Path path = Paths.get("/");
+        final List<Path> files = Files.list(path).collect(Collectors.toList());
+
+        System.out.println("> ls -la " + path.toAbsolutePath());
+        for (Path file : files) {
+
+            try {
+                final PosixFileAttributes attrs = Files.readAttributes(file, PosixFileAttributes.class);
+                final String perms = PosixFilePermissions.toString(attrs.permissions());
+
+                if (Files.isSymbolicLink(file)) {
+                    final Path realFile = Files.readSymbolicLink(file);
+
+                    System.out.printf("l%s\t %s\t %s\t %d\t %s\t %s -> %s%n", perms,
+                            attrs.owner().getName(),
+                            attrs.group().getName(),
+                            attrs.size(),
+                            attrs.lastModifiedTime(),
+                            file.getFileName(),
+                            realFile.toAbsolutePath()
+                    );
+                    continue;
+                }
+
+                System.out.printf("%s%s\t %s\t %s\t %d\t %s\t %s%n", type(attrs), perms,
+                        attrs.owner().getName(),
+                        attrs.group().getName(),
+                        attrs.size(),
+                        attrs.lastModifiedTime(),
+                        file.getFileName()
+                );
+            } catch (NoSuchFileException nsfEx) {
+                System.err.printf("[error]: [%s] : %s", nsfEx.getClass().getSimpleName(),
+                        nsfEx.getMessage() + " no such file or directory");
+            } catch (IOException e) {
+                System.err.printf("[error]: [%s] : %s", e.getClass().getSimpleName(), e.getMessage());
+            }
+        }
+
+        System.out.printf("list %d files in %s%n", files.size(), path);
+    }
+
+    private static String type(PosixFileAttributes attrs) {
+
+        if (attrs.isSymbolicLink()) {
+            return "l";
+        }
+        if (attrs.isDirectory()) {
+            return "d";
+        }
+
+        return "-";
     }
 
 }
