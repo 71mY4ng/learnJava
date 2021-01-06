@@ -1,5 +1,7 @@
 package com.company.demo;
 
+import com.google.common.base.Stopwatch;
+import org.apache.commons.lang3.StringUtils;
 import org.junit.Assert;
 import org.junit.Test;
 
@@ -10,6 +12,8 @@ import java.nio.file.attribute.BasicFileAttributes;
 import java.nio.file.attribute.PosixFileAttributes;
 import java.nio.file.attribute.PosixFilePermissions;
 import java.util.*;
+import java.util.concurrent.TimeUnit;
+import java.util.logging.Logger;
 import java.util.stream.Collectors;
 
 public class FileIOTest {
@@ -230,13 +234,45 @@ public class FileIOTest {
         Assert.assertTrue(Files.exists(path));
     }
 
+    private static final Logger logger = Logger.getLogger(FileIOTest.class.getName());
+
+    final Stopwatch sw = Stopwatch.createUnstarted();
+
     @Test
     public void lsFolder() throws IOException {
+        sw.reset();
+        sw.start();
 
-        final Path path = Paths.get("/");
-        final List<Path> files = Files.list(path).collect(Collectors.toList());
+        ls("/tmp");
 
-        System.out.println("> ls -la " + path.toAbsolutePath());
+        sw.stop();
+        logger.info("lsFolder took: " + sw.elapsed(TimeUnit.MILLISECONDS) + "ms");
+    }
+
+    @Test
+    public void lsFolderFuzzy() throws IOException {
+        sw.reset();
+        sw.start();
+
+        ls("/tmp/*-unix");
+
+        sw.stop();
+        logger.info("lsFolderFuzzy took: " + sw.elapsed(TimeUnit.MILLISECONDS) + "ms");
+    }
+
+    private void ls(String pathStr) throws IOException {
+
+        String fuzzyFilename = null;
+        if (pathStr.contains("*")) {
+            int fileNameStart = pathStr.lastIndexOf(File.separatorChar) + 1;
+            fuzzyFilename = pathStr.substring(fileNameStart);
+            pathStr = pathStr.substring(0, fileNameStart);
+        }
+        final Path dir = Paths.get(pathStr);
+
+        final List<Path> files = listFolderWithFuzzy(dir, fuzzyFilename);
+
+        System.out.println("> ls -la " + pathStr);
         for (Path file : files) {
 
             try {
@@ -272,7 +308,27 @@ public class FileIOTest {
             }
         }
 
-        System.out.printf("list %d files in %s%n", files.size(), path);
+        System.out.printf("list %d files in %s%n", files.size(), pathStr);
+    }
+
+    private List<Path> listFolderWithFuzzy(Path dir, String fuzzyName) throws IOException {
+
+        if (StringUtils.isNotBlank(fuzzyName)) {
+            List<Path> files = new ArrayList<>();
+            try (DirectoryStream<Path> stream = Files.newDirectoryStream(dir, fuzzyName)) {
+                for (Path entry : stream) {
+                    files.add(entry);
+                }
+            }
+            return files;
+        } else {
+            final List<Path> files = Files.list(dir).collect(Collectors.toList());
+
+            files.add(dir.resolve(Paths.get(".")));
+            files.add(dir.resolve(Paths.get("..")));
+
+            return files;
+        }
     }
 
     private static String type(PosixFileAttributes attrs) {
